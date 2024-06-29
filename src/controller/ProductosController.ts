@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Productos } from "../entity/Productos";
 import { resolveObjectURL } from "buffer";
+import { ValidationError, validate } from "class-validator";
 
 class ProductosController{
 
@@ -34,7 +35,7 @@ class ProductosController{
 
             //destructuring
             const {id,nombre, precio, stock, categoria}= req.body;
-
+/*
             //validr datos
             if(!id){
                 return res.status(400).json({message:"Debe indicar un id del producto."})
@@ -50,7 +51,7 @@ class ProductosController{
             }
             if(!categoria){
                 return res.status(400).json({message:"Debe indicar la categoria del producto."})
-            }
+            }*/
 
             //reglas de negocio
 
@@ -61,10 +62,10 @@ class ProductosController{
             if(product){
                 return res.status(400).json({message:"Ese producto ya existe en la base datos."})
             }
-
+/*
             if(stock<=0){
                 return res.status(400).json({message:"El stock debe ser mayor a 0."})
-            }
+            }*/
 
             //instanacia del objeto 
             product = new Productos;
@@ -73,9 +74,16 @@ class ProductosController{
             product.nombre= nombre;
             product.precio=precio;
             product.categoria=categoria;
+            
             product.stock=stock;
             product.estado=true;
 
+            const validateOpt= {ValidationError: {target:false, value:false}};
+            const errors= await validate(product, {validationError:{target:false, value:false}});
+
+            if(errors.length>0){
+                return res.status(400).json(errors);
+            }
 
            await repoProducto.save(product);  
            
